@@ -36,4 +36,4 @@ jobs:
           color: "#FF0000"
           fields: repo,message,commit,author,action,eventName,eventPath,ref,workflow,job,took
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
