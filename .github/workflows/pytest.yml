@@ -37,3 +37,5 @@ jobs:
           fields: repo,message,commit,author,action,eventName,eventPath,ref,workflow,job,took
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_ICON: ${{secrets.SLACK_ICON_URL}}
+          SLACK_USERNAME: github-bot
