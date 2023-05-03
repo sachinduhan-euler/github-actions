@@ -1,0 +1,82 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+      - beta
+      - production
+
+env:
+  ECR_REGISTRY: ${{secrets.ECR_REGISTRY}}
+  ECR_REPOSITORY: ${{ECR_REPOSITORY}}
+  AWS_REGION: ${{ env.AWS_REGION }}
+  KUBECONFIG: ${{ secrets.KUBECONFIG }}
+  SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run tests
+        id: test
+        run: pytest tests/
+      - name: Slack notification on test failure
+        if: ${{ steps.test.outcome != 'success' }}
+        uses: rtCamp/action-slack-notify@v2.2.0
+        with:
+          status: ${{ job.status }}
+          text: "Build failed on branch: ${{ github.ref }}\nRepo: ${{ github.repository }}\nCommit: ${{ github.sha }}"
+          channel: github-actions  # replace with your Slack channel
+          icon_emoji: ":warning:"
+          username: "GitHub Actions"
+          color: "#FF0000"
+          fields: repo,message,commit,author,action,eventName,eventPath,ref,workflow,job,took
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_ICON: ${{secrets.SLACK_ICON_URL}}
+          SLACK_USERNAME: github-bot
+
+  build-and-deploy-staging:
+    needs: test
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/staging' && steps.test.outcome == 'success' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Build Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: false # Docker build process not to push the built image to a Docker registry
+          tags: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+      - name: Install kubectl
+        run: |
+          curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+          chmod +x ./kubectl
+          sudo mv ./kubectl /usr/local/bin/kubectl
+      - name: Configure Kubernetes context
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG }}" | base64 -d > ~/.kube/config
+      - name: Deploy to Kubernetes
+        run: |
+          sed "s/APP_IMAGE/$ECR_REGISTRY\/$ECR_REPOSITORY:${{ github.sha }}/g" k8s/staging-deployment.yaml | kubectl apply -f -
+      - name: Wait for deployment
+        run: kubectl rollout status deployment/my-app-staging
+
