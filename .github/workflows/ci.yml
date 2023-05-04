@@ -49,7 +49,7 @@ jobs:
   deploy:
     needs: test
     runs-on: ubuntu-latest
-    if: ${{ github.ref == 'refs/heads/main' && job.status == 'success' }}
+    if: ${{ github.ref == 'refs/heads/main' && needs.test.result == 'success' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
