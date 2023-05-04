@@ -99,6 +99,15 @@ jobs:
         run: |
           sed "s/APP_IMAGE/$ECR_REGISTRY\/$ECR_REPOSITORY:${{ github.sha }}/g" k8s/staging-deployment.yaml | kubectl apply -f -
 
-      - name: Wait for deployment
-        run: kubectl rollout status deployment/${{env.APP_NAME}}
+      # - name: Wait for deployment
+      #   run: kubectl rollout status deployment/${{env.APP_NAME}} --timeout=5m
+
+      - name: Check pod status
+        run: |
+          STATUS=$(kubectl get pods ${{env.APP_NAME}} -o jsonpath='{.status.phase}')
+          if [ "$STATUS" != "Running" ]; then
+            echo "Pod is not running, deployment failed"
+            exit 1
+          fi
+
 
