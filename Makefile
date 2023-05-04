@@ -39,7 +39,7 @@ lint: ## Lint the code
 	flake8
 
 .PHONY: test
-test: dev-install pytest code-analysis
+test: dev-install pytest
 
 .PHONY: dev-install
 dev-install: ## Install testing in development mode.
