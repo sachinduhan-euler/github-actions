@@ -1,0 +1,8 @@
+apiVersion: v1
+description: Vehicle events to DB k8 service.
+name: ve2db
+version: "0.1"
+# home: http://eulerlogistics.com
+maintainers:
+  - name: Sachin duhan
+    email: sachin.duhan@eulermotors.com

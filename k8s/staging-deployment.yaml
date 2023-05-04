@@ -17,6 +17,7 @@ spec:
       containers:
         - name: my-app
           image: APP_IMAGE
+          imagePullPolicy: Always
           ports:
             - containerPort: 5000
           resources:

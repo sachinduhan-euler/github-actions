@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: s3rvd-deployment
+  labels:
+    app: s3rvd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: s3rvd
+  template:
+    metadata:
+      labels:
+        app: s3rvd
+    spec:
+      containers:
+      - name: s3rvd
+        image: {{ .Values.image }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        env:
+        - name: env
+          value: {{ .Values.env }}
+        resources:
+          requests:
+            cpu: "1"
+            memory: "1Gi"
+          limits:
+            cpu: "4"
+            memory: "8Gi"
+        ports:
+        - containerPort: 8080
