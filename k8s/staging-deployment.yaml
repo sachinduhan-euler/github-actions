@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: my-app-staging
+  name: ci-demo
 spec:
   replicas: 1 # Number of pods to create
   selector:
