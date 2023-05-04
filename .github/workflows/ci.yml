@@ -63,8 +63,8 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          push: false # Docker build process not to push the built image to a Docker registry
-          tags: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
+          push: true # Docker build process not to push the built image to a Docker registry
+          tags: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
       - name: Install kubectl
         run: |
           curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
@@ -76,7 +76,7 @@ jobs:
           echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > ~/.kube/config
       - name: Deploy to Kubernetes
         run: |
-          sed "s/APP_IMAGE/$ECR_REGISTRY\/$ECR_REPOSITORY:latest" k8s/staging-deployment.yaml | kubectl apply -f -
+          sed "s/APP_IMAGE/$ECR_REGISTRY\/$ECR_REPOSITORY:${{ github.sha }}/g" k8s/staging-deployment.yaml | kubectl apply -f -
       - name: Wait for deployment
         run: kubectl rollout status deployment/my-app-staging
 
