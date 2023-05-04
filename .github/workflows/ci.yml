@@ -14,22 +14,25 @@ env:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # or another operating system of your choice
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Setup Python
+
+      - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.9'
+          python-version: '3.x'  # or another version of Python that you need
+
       - name: Install dependencies
-        run: pip install -r requirements.txt
-      - name: Run tests
-        id: test
-        run: pytest tests/
-      - name: Slack notification on test failure
-        if: ${{ steps.test.outcome != 'success' }}
-        uses: rtCamp/action-slack-notify@v2.2.0
+        run: make install  # or another command to install your dependencies
+
+      - name: Run tests with pytest
+        run: make test  # or another command to run your tests with pytest
+
+      - name: Send Slack notification if build fails
+        if: ${{ failure() }}
+        uses: rtCamp/action-slack-notify@v2
         with:
           status: ${{ job.status }}
           text: "Build failed on branch: ${{ github.ref }}\nRepo: ${{ github.repository }}\nCommit: ${{ github.sha }}"
@@ -46,7 +49,7 @@ jobs:
   deploy:
     needs: test
     runs-on: ubuntu-latest
-    if: ${{ github.ref == 'refs/heads/main' && steps.test.outcome == 'success' }}
+    if: ${{ github.ref == 'refs/heads/main' && job.status == 'success' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
