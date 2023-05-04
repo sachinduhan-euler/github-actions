@@ -93,7 +93,7 @@ jobs:
 
       - name: Delete existing deployment (if exists)
         run: |
-          kubectl delete deployment my-app-staging --ignore-not-found=true
+          kubectl delete deployment ${{env.APP_NAME}} --ignore-not-found=true
 
       - name: Deploy to Kubernetes
         run: |
