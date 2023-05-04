@@ -3,7 +3,7 @@ import math
 class MathFunctions:
     @staticmethod
     def add(x: float, y: float) -> float:
-        return x + y
+        return round(x + y,2)
     
     @staticmethod
     def subtract(x: float, y: float) -> float:

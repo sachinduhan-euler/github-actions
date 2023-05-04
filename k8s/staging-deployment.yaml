@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app-staging
+spec:
+  replicas: 1 # Number of pods to create
+  selector:
+    matchLabels:
+      app: my-app
+      env: staging
+  template:
+    metadata:
+      labels:
+        app: my-app
+        env: staging
+    spec:
+      containers:
+        - name: my-app
+          image: APP_IMAGE
+          ports:
+            - containerPort: 5000
+          resources:
+            limits:
+              cpu: "1"
+              memory: "512Mi"
+            requests:
+              cpu: "0.5"
+              memory: "256Mi"              
+          env:
+            - name: FLASK_ENV
+              value: "staging"
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: my-app-secret
+                  key: secret_key
+            - name: DATABASE_URI
+              valueFrom:
+                secretKeyRef:
+                  name: my-app-secret
+                  key: database_uri
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+      imagePullSecrets:
+        - name: my-registry-secret

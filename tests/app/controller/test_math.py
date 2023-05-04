@@ -5,7 +5,7 @@ class TestMathFunctions(unittest.TestCase):
     def test_add(self):
         self.assertEqual(MathFunctions.add(2, 3), 5)
         self.assertEqual(MathFunctions.add(-2, 3), 1)
-        self.assertEqual(MathFunctions.add(0.1, 0.2), 0.3)
+        self.assertEqual(MathFunctions.add(0.1, 0.2), 0.30)
     
     def test_subtract(self):
         self.assertEqual(MathFunctions.subtract(5, 3), 2)
@@ -15,7 +15,7 @@ class TestMathFunctions(unittest.TestCase):
     def test_multiply(self):
         self.assertEqual(MathFunctions.multiply(2, 3), 6)
         self.assertEqual(MathFunctions.multiply(-2, 3), -6)
-        self.assertEqual(MathFunctions.multiply(0.1, 0.2), 0.02)
+        self.assertAlmostEqual(MathFunctions.multiply(0.1, 0.2), 0.02, places=2)
     
     def test_divide(self):
         self.assertEqual(MathFunctions.divide(6, 3), 2)

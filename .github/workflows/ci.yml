@@ -4,15 +4,12 @@ on:
   push:
     branches:
       - main
-      - staging
-      - beta
-      - production
 
 env:
   ECR_REGISTRY: ${{secrets.ECR_REGISTRY}}
-  ECR_REPOSITORY: ${{ECR_REPOSITORY}}
-  AWS_REGION: ${{ env.AWS_REGION }}
-  KUBECONFIG: ${{ secrets.KUBECONFIG }}
+  ECR_REPOSITORY: ${{secrets.ECR_REPOSITORY}}
+  AWS_REGION: ap-south-1
+  KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
   SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
 
 jobs:
@@ -46,10 +43,10 @@ jobs:
           SLACK_ICON: ${{secrets.SLACK_ICON_URL}}
           SLACK_USERNAME: github-bot
 
-  build-and-deploy-staging:
+  deploy:
     needs: test
     runs-on: ubuntu-latest
-    if: ${{ github.ref == 'refs/heads/staging' && steps.test.outcome == 'success' }}
+    if: ${{ github.ref == 'refs/heads/main' && steps.test.outcome == 'success' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -73,7 +70,7 @@ jobs:
       - name: Configure Kubernetes context
         run: |
           mkdir -p ~/.kube
-          echo "${{ secrets.KUBECONFIG }}" | base64 -d > ~/.kube/config
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > ~/.kube/config
       - name: Deploy to Kubernetes
         run: |
           sed "s/APP_IMAGE/$ECR_REGISTRY\/$ECR_REPOSITORY:${{ github.sha }}/g" k8s/staging-deployment.yaml | kubectl apply -f -

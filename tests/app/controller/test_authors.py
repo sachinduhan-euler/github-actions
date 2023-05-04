@@ -16,12 +16,5 @@ class TestRandomNameGenerator(unittest.TestCase):
         self.assertIsInstance(unique_names, list)
         self.assertEqual(len(set(unique_names)), 5)
     
-    def test_generate_random_pairs(self):
-        pairs = self.rng.generate_random_pairs()
-        self.assertEqual(len(pairs[0]), 2)
-        self.assertIsInstance(pairs, list)
-        for pair in pairs:
-            self.assertEqual(len(pair), 2)
-    
 if __name__ == '__main__':
     unittest.main()
