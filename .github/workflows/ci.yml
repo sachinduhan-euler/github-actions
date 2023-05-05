@@ -8,7 +8,7 @@ on:
 env:
   APP_NAME: ci-demo
   ECR_REGISTRY: ${{secrets.ECR_REGISTRY}}
-  ECR_REPOSITORY: ${{secrets.ECR_REPOSITORY}}
+  ECR_REPOSITORY: ${{secrets.ECR_REPOSITORY}} # ci-test
   AWS_REGION: ap-south-1
   KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
   SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
@@ -93,14 +93,14 @@ jobs:
 
       - name: Delete existing deployment (if exists)
         run: |
-          kubectl delete deployment ${{env.APP_NAME}} --ignore-not-found=true
+          kubectl delete deployment ${{env.APP_NAME}} --ignore-not-found=true --cascade
 
       - name: Deploy to Kubernetes
         run: |
           sed "s/APP_IMAGE/$ECR_REGISTRY\/$ECR_REPOSITORY:${{ github.sha }}/g" k8s/staging-deployment.yaml | kubectl apply -f -
 
       - name: Wait for deployment
-        run: kubectl rollout status deployment/${{env.APP_NAME}}  --timeout=5m
+        run: kubectl rollout status deployment/${{env.APP_NAME}}  --timeout=1m
 
       - name: Check pod status
         run: |
